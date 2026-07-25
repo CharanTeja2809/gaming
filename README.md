@@ -115,9 +115,9 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Charan Teja**
 
-GitHub: https://github.com/YOUR-USERNAME
+GitHub: https://github.com/CharanTeja2809
 
 ---
 
