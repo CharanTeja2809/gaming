@@ -114,7 +114,10 @@ function resetBall(){
 
 function draw(){
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // Blue table background
+ctx.fillStyle = "#1976d2";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 
     drawCenterLine();
 
@@ -122,6 +125,13 @@ function draw(){
     drawRect(rightPaddle.x,rightPaddle.y,paddleWidth,paddleHeight,"white");
 
     drawBall();
+
+    ctx.beginPath();
+ctx.arc(canvas.width/2, canvas.height/2, 60, 0, Math.PI * 2);
+ctx.strokeStyle = "white";
+ctx.lineWidth = 4;
+ctx.stroke();
+
 
 }
 
