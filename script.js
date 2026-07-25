@@ -47,7 +47,8 @@ function drawCenterLine(){
 
     for(let i=0;i<canvas.height;i+=30){
 
-        drawRect(canvas.width/2-2,i,4,20,"gray");
+        drawRect(canvas.width/2-2,i,4,20,"white");
+
 
     }
 
@@ -115,8 +116,10 @@ function resetBall(){
 function draw(){
 
     // Blue table background
-ctx.fillStyle = "#1976d2";
+// Blue table surface
+ctx.fillStyle = "#1565C0";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 
 
     drawCenterLine();
@@ -127,11 +130,11 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawBall();
 
     ctx.beginPath();
-ctx.arc(canvas.width/2, canvas.height/2, 60, 0, Math.PI * 2);
-ctx.strokeStyle = "white";
-ctx.lineWidth = 4;
-ctx.stroke();
-
+    ctx.arc(canvas.width/2, canvas.height/2, 60, 0, Math.PI * 2);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+ 
 
 }
 
