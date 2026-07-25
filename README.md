@@ -2,7 +2,7 @@
 # 🏓 Pong Game
 
 A classic two-player Pong game built using **HTML**, **CSS**, and **JavaScript**. Control the paddles, keep the ball in play, and compete to achieve the highest score.
-
+Game Demo:https://charanteja2809.github.io/gaming/
 ---
 
 ## 🎮 Features
