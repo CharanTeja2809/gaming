@@ -10,6 +10,7 @@ let aiScore = 0;
 const WIN_SCORE = 10;
 
 let gameRunning = true;
+let gameMode = "single"; // single or multiplayer
 
 const paddleWidth = 15;
 const paddleHeight = 100;
@@ -36,10 +37,25 @@ let ball={
     speedY:5
 };
 
-canvas.addEventListener("mousemove",e=>{
-    const rect=canvas.getBoundingClientRect();
-    player.y=e.clientY-rect.top-player.height/2;
+let keys = {};
+
+document.addEventListener("keydown",(e)=>{
+    keys[e.key]=true;
 });
+
+document.addEventListener("keyup",(e)=>{
+    keys[e.key]=false;
+});
+
+// Mobile touch control
+canvas.addEventListener("touchmove",(e)=>{
+    if(window.innerWidth<900){
+        e.preventDefault();
+
+        const rect=canvas.getBoundingClientRect();
+        player.y=e.touches[0].clientY-rect.top-player.height/2;
+    }
+},{passive:false});
 
 function drawRect(x,y,w,h,color){
     ctx.fillStyle=color;
@@ -122,7 +138,36 @@ function update(){
     ball.x+=ball.speedX;
     ball.y+=ball.speedY;
 
+    const speed=7;
+
+if(gameMode==="single"){
+
+    // Player uses arrow keys
+    if(keys["ArrowUp"]) player.y-=speed;
+    if(keys["ArrowDown"]) player.y+=speed;
+
+    // Mobile keeps touch control
+    if(window.innerWidth>900){
+        player.y=Math.max(0,Math.min(HEIGHT-player.height,player.y));
+    }
+
+    // Computer
     ai.y+=(ball.y-(ai.y+ai.height/2))*0.08;
+
+}else{
+
+    // Player 1
+    if(keys["w"]||keys["W"]) player.y-=speed;
+    if(keys["s"]||keys["S"]) player.y+=speed;
+
+    // Player 2
+    if(keys["ArrowUp"]) ai.y-=speed;
+    if(keys["ArrowDown"]) ai.y+=speed;
+
+}
+
+player.y=Math.max(0,Math.min(HEIGHT-player.height,player.y));
+ai.y=Math.max(0,Math.min(HEIGHT-ai.height,ai.y));
 
     if(ball.y<0 || ball.y>HEIGHT)
         ball.speedY*=-1;
@@ -189,3 +234,24 @@ function gameLoop(){
 }
 
 gameLoop();
+function startSingle(){
+
+    gameMode="single";
+
+    playerScore=0;
+    aiScore=0;
+
+    resetBall();
+
+}
+
+function startMulti(){
+
+    gameMode="multiplayer";
+
+    playerScore=0;
+    aiScore=0;
+
+    resetBall();
+
+}
