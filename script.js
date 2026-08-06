@@ -1,196 +1,191 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const leftScoreText = document.getElementById("leftScore");
-const rightScoreText = document.getElementById("rightScore");
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+
+let playerScore = 0;
+let aiScore = 0;
+
+const WIN_SCORE = 10;
+
+let gameRunning = true;
 
 const paddleWidth = 15;
 const paddleHeight = 100;
 
-const ballSize = 14;
-
-let leftScore = 0;
-let rightScore = 0;
-
-const leftPaddle = {
+let player = {
     x:20,
-    y:200,
-    dy:0
+    y:HEIGHT/2-50,
+    width:paddleWidth,
+    height:paddleHeight
 };
 
-const rightPaddle = {
-    x:canvas.width-35,
-    y:200,
-    dy:0
+let ai = {
+    x:WIDTH-35,
+    y:HEIGHT/2-50,
+    width:paddleWidth,
+    height:paddleHeight
 };
 
-const ball = {
-    x:canvas.width/2,
-    y:canvas.height/2,
-    dx:6,
-    dy:4
+let ball={
+    x:WIDTH/2,
+    y:HEIGHT/2,
+    radius:10,
+    speedX:5,
+    speedY:5
 };
+
+canvas.addEventListener("mousemove",e=>{
+    const rect=canvas.getBoundingClientRect();
+    player.y=e.clientY-rect.top-player.height/2;
+});
 
 function drawRect(x,y,w,h,color){
     ctx.fillStyle=color;
     ctx.fillRect(x,y,w,h);
 }
 
-function drawBall(){
+function drawCircle(x,y,r,color){
+    ctx.fillStyle=color;
     ctx.beginPath();
-    ctx.arc(ball.x,ball.y,ballSize,0,Math.PI*2);
-    ctx.fillStyle="white";
+    ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fill();
 }
 
-function drawCenterLine(){
+function drawNet(){
 
-    for(let i=0;i<canvas.height;i+=30){
-
-        drawRect(canvas.width/2-2,i,4,20,"white");
-
-
+    for(let i=0;i<HEIGHT;i+=30){
+        drawRect(WIDTH/2-2,i,4,20,"white");
     }
 
 }
 
-function update(){
+function drawText(text,x,y){
 
-    leftPaddle.y += leftPaddle.dy;
-    rightPaddle.y += rightPaddle.dy;
+    ctx.fillStyle="white";
+    ctx.font="35px Arial";
+    ctx.fillText(text,x,y);
 
-    leftPaddle.y = Math.max(0,Math.min(canvas.height-paddleHeight,leftPaddle.y));
-    rightPaddle.y = Math.max(0,Math.min(canvas.height-paddleHeight,rightPaddle.y));
+}
 
-    ball.x += ball.dx;
-    ball.y += ball.dy;
+function collision(ball,paddle){
 
-    if(ball.y-ballSize<0 || ball.y+ballSize>canvas.height){
-        ball.dy *= -1;
-    }
-
-    if(
-        ball.x-ballSize < leftPaddle.x+paddleWidth &&
-        ball.y > leftPaddle.y &&
-        ball.y < leftPaddle.y+paddleHeight
-    ){
-        ball.dx *= -1;
-        ball.x = leftPaddle.x+paddleWidth+ballSize;
-    }
-
-    if(
-        ball.x+ballSize > rightPaddle.x &&
-        ball.y > rightPaddle.y &&
-        ball.y < rightPaddle.y+paddleHeight
-    ){
-        ball.dx *= -1;
-        ball.x = rightPaddle.x-ballSize;
-    }
-
-    if(ball.x<0){
-        rightScore++;
-        resetBall();
-    }
-
-    if(ball.x>canvas.width){
-        leftScore++;
-        resetBall();
-    }
-
-    leftScoreText.textContent = leftScore;
-    rightScoreText.textContent = rightScore;
+    return(
+        ball.x-ball.radius<paddle.x+paddle.width &&
+        ball.x+ball.radius>paddle.x &&
+        ball.y-ball.radius<paddle.y+paddle.height &&
+        ball.y+ball.radius>paddle.y
+    );
 
 }
 
 function resetBall(){
 
-    ball.x = canvas.width/2;
-    ball.y = canvas.height/2;
-
-    ball.dx = -ball.dx;
-
-    ball.dy = (Math.random()*6)-3;
+    ball.x=WIDTH/2;
+    ball.y=HEIGHT/2;
+    ball.speedX*=-1;
 
 }
 
-function draw(){
+function endGame(winner){
 
-    // Blue table background
-// Blue table surface
-ctx.fillStyle = "#1565C0";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+    gameRunning=false;
 
+    document.getElementById("winner").innerHTML=winner+" Wins!";
+    document.getElementById("gameOver").classList.remove("hide");
 
+}
 
-    drawCenterLine();
+function restartGame(){
 
-    drawRect(leftPaddle.x,leftPaddle.y,paddleWidth,paddleHeight,"white");
-    drawRect(rightPaddle.x,rightPaddle.y,paddleWidth,paddleHeight,"white");
+    playerScore=0;
+    aiScore=0;
 
-    drawBall();
+    player.y=HEIGHT/2-50;
+    ai.y=HEIGHT/2-50;
 
-    ctx.beginPath();
-    ctx.arc(canvas.width/2, canvas.height/2, 60, 0, Math.PI * 2);
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 4;
-    ctx.stroke();
- 
+    resetBall();
+
+    gameRunning=true;
+
+    document.getElementById("gameOver").classList.add("hide");
+
+    gameLoop();
+
+}
+
+function update(){
+
+    if(!gameRunning) return;
+
+    ball.x+=ball.speedX;
+    ball.y+=ball.speedY;
+
+    ai.y+=(ball.y-(ai.y+ai.height/2))*0.08;
+
+    if(ball.y<0 || ball.y>HEIGHT)
+        ball.speedY*=-1;
+
+    let currentPlayer=(ball.x<WIDTH/2)?player:ai;
+
+    if(collision(ball,currentPlayer))
+        ball.speedX*=-1;
+
+    if(ball.x<0){
+
+        aiScore++;
+
+        if(aiScore>=WIN_SCORE){
+            endGame("Computer");
+            return;
+        }
+
+        resetBall();
+
+    }
+
+    if(ball.x>WIDTH){
+
+        playerScore++;
+
+        if(playerScore>=WIN_SCORE){
+            endGame("Player");
+            return;
+        }
+
+        resetBall();
+
+    }
+
+}
+
+function render(){
+
+    drawRect(0,0,WIDTH,HEIGHT,"#1565C0");
+
+    drawNet();
+
+    drawRect(player.x,player.y,player.width,player.height,"white");
+    drawRect(ai.x,ai.y,ai.width,ai.height,"white");
+
+    drawCircle(ball.x,ball.y,ball.radius,"yellow");
+
+    drawText(playerScore,WIDTH/4,50);
+    drawText(aiScore,WIDTH*3/4,50);
 
 }
 
 function gameLoop(){
 
+    if(!gameRunning) return;
+
     update();
 
-    draw();
+    render();
 
     requestAnimationFrame(gameLoop);
 
 }
-
-document.addEventListener("keydown",e=>{
-
-    switch(e.key){
-
-        case "w":
-        case "W":
-            leftPaddle.dy=-8;
-            break;
-
-        case "s":
-        case "S":
-            leftPaddle.dy=8;
-            break;
-
-        case "ArrowUp":
-            rightPaddle.dy=-8;
-            break;
-
-        case "ArrowDown":
-            rightPaddle.dy=8;
-            break;
-    }
-
-});
-
-document.addEventListener("keyup",e=>{
-
-    switch(e.key){
-
-        case "w":
-        case "W":
-        case "s":
-        case "S":
-            leftPaddle.dy=0;
-            break;
-
-        case "ArrowUp":
-        case "ArrowDown":
-            rightPaddle.dy=0;
-            break;
-
-    }
-
-});
 
 gameLoop();
